@@ -52,9 +52,45 @@ void loop()
     char str2[10] = {"Celsius "};
     itoa(celsius,str,10);
     /* Send a notification to your phone. */
-    Notification.notifyPhone(str);
+    Notification.notifyPhone(strcat(str2,str));
     /* Wait for 300 ms. */
     Serial.print(" Celsius: "); Serial.print(celsius);
-    OneSheeld.delay(5000);
+asm volatile (
+     "call OneSecondDelay \n\t" //delay 5 sec
+     "call OneSecondDelay \n\t"
+     "call OneSecondDelay \n\t"
+     "call OneSecondDelay \n\t"
+     "call OneSecondDelay \n\t"
 
+     //delay
+     "rjmp 4f \n\t"             //exit
+ 
+  "OneSecondDelay: \n\t"
+     "ldi r18, 0 \n\t"          //delay 1 second
+     "ldi r20, 0 \n\t"
+     "ldi r21, 0 \n\t"
+ 
+  "1: ldi r24, lo8(400) \n\t"
+     "ldi r25, hi8(400) \n\t"
+  "2: sbiw r24, 1 \n\t"         //10x around this loop = 1ms
+     "brne 2b \n\t"
+     "inc r18 \n\t"
+     "cpi r18, 10 \n\t"
+     "brne 1b \n\t"
+ 
+     "subi r20, 0xff \n\t"      //1000 x 1ms = 1 second
+     "sbci r21, 0xff \n\t"
+     "ldi r24, hi8(1000) \n\t"
+     "cpi r20, lo8(1000) \n\t"
+     "cpc r21, r24 \n\t"
+     "breq 3f \n\t"
+ 
+     "ldi r18, 0 \n\t"
+     "rjmp 1b \n\t"
+ 
+  "3: \n\t"
+     "ret \n\t"
+ 
+  "4: \n\t"                     //exit
+  );
 }
